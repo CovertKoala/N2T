@@ -1,0 +1,59 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/05/Memory.hdl
+
+/**
+ * The complete address space of the Hack computer's memory,
+ * including RAM and memory-mapped I/O. 
+ * The chip facilitates read and write operations, as follows:
+ *     Read:  out(t) = Memory[address(t)](t)
+ *     Write: if load(t-1) then Memory[address(t-1)](t) = in(t-1)
+ * In words: the chip always outputs the value stored at the memory 
+ * location specified by address. If load==1, the in value is loaded 
+ * into the memory location specified by address. This value becomes 
+ * available through the out output from the next time step onward.
+ * Address space rules:
+ * Only the upper 16K+8K+1 words of the Memory chip are used. 
+ * Access to address>0x6000 is invalid. Access to any address in 
+ * the range 0x4000-0x5FFF results in accessing the screen memory 
+ * map. Access to address 0x6000 results in accessing the keyboard 
+ * memory map. The behavior in these addresses is described in the 
+ * Screen and Keyboard chip specifications given in the book.
+ */
+
+CHIP Memory {
+    IN in[16], load, address[15];
+    OUT out[16];
+
+    PARTS:
+    // MEMORY INPUT
+    // Use 1st Address bit to select between Memory and IO.
+    DMux(in=load, sel=address[14], a=RAMLD,b=SCREENLD);
+
+    // RAM Addresses 0 00 0000 0000 0000 to 0 11 1111 1111 1111
+    // RAM16k chip is 14 bit buss
+    RAM16K(in=in, address=address[0..13], load=RAMLD, out=RAMOUT);
+
+    // Screen Addresses 10 0 0000 0000 0000 to 10 1 1111 1111 1111
+    // Screen chip address is 13 bit buss
+    Screen(in=in, address=address[0..12], load=SCREENLD, out=SCREENOUT);
+
+    // Address 11 0 0000 0000 0000
+    // Keyboard memory verification -> must have all 0 after 11
+    Keyboard(out=KEYOUT);
+    Or8Way(in=address[0..7],out=OR8W1);
+    Or8Way(in[0..6]=address[6..12],in[7]=OR8W1,out=OR8W2);
+    Not(in=OR8W2,out=VADR);
+    And16(a=KEYOUT, out=VKEYOUT,
+          b[0]=VADR, b[1]=VADR, b[2]=VADR, b[3]=VADR,
+          b[4]=VADR, b[5]=VADR, b[6]=VADR, b[7]=VADR,
+          b[8]=VADR, b[9]=VADR, b[10]=VADR, b[11]=VADR,
+          b[12]=VADR, b[13]=VADR, b[14]=VADR, b[15]=VADR);
+    
+
+    // 'MEMORY' OUTPUT
+    // Use 1st two Address bits to output (read) from an address.
+    // 00 and 01 = RAM16k, 10 = Screen, and 11 = Keyboard
+    Mux4Way16(sel=address[13..14], out=out, a=RAMOUT,b=RAMOUT,c=SCREENOUT,d=VKEYOUT);
+}

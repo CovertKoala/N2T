@@ -1,0 +1,38 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/02/Inc16.hdl
+
+/**
+ * 16-bit incrementer:
+ * out = in + 1 (arithmetic addition)
+ */
+
+CHIP Inc16 {
+    IN in[16];
+    OUT out[16];
+
+    PARTS:
+    //Similar to Add16,  but with b preset to ('0000000000000001').
+    //So all b[1..15] would be 0, with b[0] = 1.
+    //Since bits are added individually and a + 0 = a, then b[1..15] is not needed.
+    //All adders can be half adders with carry bit ripple with first 'carry' as 1.
+    //i.e. 'full adder = a + 0 + carry = sum + carry' or 'half adder = a + carry = sum + carry'
+
+    HalfAdder(a=true, b=in[0], sum=out[0], carry=HA0C);
+    HalfAdder(a=HA0C, b=in[1], sum=out[1], carry=HA1C);
+    HalfAdder(a=HA1C, b=in[2], sum=out[2], carry=HA2C);
+    HalfAdder(a=HA2C, b=in[3], sum=out[3], carry=HA3C);
+    HalfAdder(a=HA3C, b=in[4], sum=out[4], carry=HA4C);
+    HalfAdder(a=HA4C, b=in[5], sum=out[5], carry=HA5C);
+    HalfAdder(a=HA5C, b=in[6], sum=out[6], carry=HA6C);
+    HalfAdder(a=HA6C, b=in[7], sum=out[7], carry=HA7C);
+    HalfAdder(a=HA7C, b=in[8], sum=out[8], carry=HA8C);
+    HalfAdder(a=HA8C, b=in[9], sum=out[9], carry=HA9C);
+    HalfAdder(a=HA9C, b=in[10], sum=out[10], carry=HA10C);
+    HalfAdder(a=HA10C, b=in[11], sum=out[11], carry=HA11C);
+    HalfAdder(a=HA11C, b=in[12], sum=out[12], carry=HA12C);
+    HalfAdder(a=HA12C, b=in[13], sum=out[13], carry=HA13C);
+    HalfAdder(a=HA13C, b=in[14], sum=out[14], carry=HA14C);
+    HalfAdder(a=HA14C, b=in[15], sum=out[15], carry=HA15C);
+}
